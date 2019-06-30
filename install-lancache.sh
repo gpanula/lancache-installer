@@ -57,25 +57,21 @@ declare -a lc_folders=(config data logs temp)
 # Log Folders
 declare -a lc_logfolders=(access errors keys)
 
-declare -a ip_eth=$(ip link show | grep ens | tr ":" " " | awk '{ print $2 }')
-for int in ${ip_eth[@]}; do
-	inet_eth=$(ip route get $lc_dns1 | tr " " " " | awk '{ print $5 }' )
-	if [[ "$inet_eth" == "$int" ]]; then
-		lc_ip_eth=$int
-	fi
-done
+# find the interface for the default route
+lc_ip_eth=$( netstat -rn | grep ^0.0.0.0 | awk '{ print $NF }'
 
+# grab the ipv4 address of the interface
 lc_ip=$(/bin/ip -4 addr show $lc_ip_eth | grep -oP "(?<=inet ).*(?=br)")
 # 1st octet
-lc_ip_p1=$(echo ${lc_ip} | tr "." " " | awk '{ print $1 }')
+lc_ip_p1=$(echo ${lc_ip} | awk -F "." '{ print $1 }')
 # 2nd octet
-lc_ip_p2=$(echo ${lc_ip} | tr "." " " | awk '{ print $2 }')
+lc_ip_p2=$(echo ${lc_ip} | awk -F "." '{ print $2 }')
 # 3rd octet
-lc_ip_p3=$(echo ${lc_ip} | tr "." " " | awk '{ print $3 }')
+lc_ip_p3=$(echo ${lc_ip} | awk -F "." '{ print $3 }')
 # 4th octet
-lc_ip_p4=$(echo ${lc_ip} | tr "." " " | awk '{ print $4 }' | cut -f1 -d "/")
+lc_ip_p4=$(echo ${lc_ip} | awk -F "." '{ print $4 }' | cut -f1 -d "/")
 # Subnet
-lc_ip_sn=$(echo ${lc_ip} | sed 's:.*/::' )
+lc_ip_sn=$(echo ${lc_ip} | cut -f2 -d "/" )
 
 ########### Update lancache config folder from github########################################
 # Chcecking to see if directory exists before attempting to remove and add to prevent bash errors
